@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="war" name="daulThrust:war">
+    <output-path>$PROJECT_DIR$/target</output-path>
+    <root id="archive" name="com.miller.daulThrust.war">
+      <element id="artifact" artifact-name="daulThrust:war exploded" />
+    </root>
+  </artifact>
+</component>
