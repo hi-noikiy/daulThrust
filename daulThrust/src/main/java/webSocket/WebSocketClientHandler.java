@@ -49,7 +49,7 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
-        System.out.println("WebSocket Client disconnected!");
+//        System.out.println("WebSocket Client disconnected!");
     }
 
     @Override
@@ -58,7 +58,7 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
         moniter.updateTime();
         if (!handshaker.isHandshakeComplete()) {
             handshaker.finishHandshake(ch, (FullHttpResponse) msg);
-            System.out.println("WebSocket Client connected!");
+//            System.out.println("WebSocket Client connected!");
             handshakeFuture.setSuccess();
             return;
         }

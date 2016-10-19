@@ -4,4 +4,34 @@
 
 <web-app>
   <display-name>Archetype Created Web Application</display-name>
+
+  <context-param>
+    <param-name>log4jConfiguration</param-name>
+    <param-value>log4j2.xml</param-value>
+  </context-param>
+
+  <!-- log4j2 异步日志配置 -->
+  <context-param>
+    <param-name>Log4jContextSelector</param-name>
+    <param-value>org.apache.logging.log4j.core.async.AsyncLoggerContextSelector</param-value>
+  </context-param>
+
+  <!-- Spring的log4j监听器 -->
+  <listener>
+    <listener-class>org.springframework.web.util.Log4jConfigListener</listener-class>
+  </listener>
+
+  <!--<filter>-->
+    <!--<filter-name>log4jServletFilter</filter-name>-->
+    <!--<filter-class>org.apache.logging.log4j.web.Log4jServletFilter</filter-class>-->
+  <!--</filter>-->
+
+  <!--<filter-mapping>-->
+    <!--<filter-name>log4jServletFilter</filter-name>-->
+    <!--<url-pattern>*</url-pattern>-->
+    <!--<dispatcher>REQUEST</dispatcher>-->
+    <!--<dispatcher>FORWARD</dispatcher>-->
+    <!--<dispatcher>INCLUDE</dispatcher>-->
+    <!--<dispatcher>ERROR</dispatcher>-->
+  <!--</filter-mapping>-->
 </web-app>

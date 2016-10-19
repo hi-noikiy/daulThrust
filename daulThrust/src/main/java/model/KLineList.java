@@ -1,5 +1,11 @@
 package model;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
+import org.apache.log4j.xml.DOMConfigurator;
+
 import java.math.BigDecimal;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -70,5 +76,12 @@ public class KLineList {
                 "firKline=" + firKline +
                 ", secKline=" + secKline +
                 '}';
+    }
+
+    public static void main(String[] args) {
+        PropertyConfigurator.configure("src/main/resources/config/log4j.properties");
+//        DOMConfigurator.configure("log4j.properties");
+        Log log = LogFactory.getLog(KLineList.class);
+        log.debug("123123123123123123123123123123123");
     }
 }

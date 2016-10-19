@@ -1,6 +1,7 @@
 package model;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
 /**
  * Created by tonyqi on 16-10-12.
@@ -10,87 +11,36 @@ public class TradeOrder {
     private int id;//zizeng
 
     private long orderId;
-    private BigDecimal openPrice;
+    private BigDecimal tickPrice;
     private BigDecimal avgPrice;
-    private BigDecimal dealAmount;
-    private BigDecimal earningP;
     private BigDecimal amount;
+    private BigDecimal dealAmount;
     private boolean isComplete;
-    private boolean isTickOrder;//已经挂单
-    private long createTime;
-    private int minStrategy;//几分钟策略
     private boolean isCloseout;
+    private Date createTime;
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 
     public long getOrderId() {
         return orderId;
-    }
-
-    public BigDecimal getAmount() {
-        return amount;
-    }
-
-    public void setAmount(BigDecimal amount) {
-        this.amount = amount;
     }
 
     public void setOrderId(long orderId) {
         this.orderId = orderId;
     }
 
-    public BigDecimal getOpenPrice() {
-        return openPrice;
+    public BigDecimal getTickPrice() {
+        return tickPrice;
     }
 
-    public void setOpenPrice(BigDecimal openPrice) {
-        this.openPrice = openPrice;
-    }
-
-    public BigDecimal getEarningP() {
-        return earningP;
-    }
-
-    public void setEarningP(BigDecimal earningP) {
-        this.earningP = earningP;
-    }
-
-    public boolean isComplete() {
-        return isComplete;
-    }
-
-    public void setComplete(boolean complete) {
-        isComplete = complete;
-    }
-
-    public boolean isTickOrder() {
-        return isTickOrder;
-    }
-
-    public void setTickOrder(boolean tickOrder) {
-        isTickOrder = tickOrder;
-    }
-
-    public long getCreateTime() {
-        return createTime;
-    }
-
-    public void setCreateTime(long createTime) {
-        this.createTime = createTime;
-    }
-
-    public int getMinStrategy() {
-        return minStrategy;
-    }
-
-    public void setMinStrategy(int minStrategy) {
-        this.minStrategy = minStrategy;
-    }
-
-    public boolean isCloseout() {
-        return isCloseout;
-    }
-
-    public void setCloseout(boolean closeout) {
-        isCloseout = closeout;
+    public void setTickPrice(BigDecimal tickPrice) {
+        this.tickPrice = tickPrice;
     }
 
     public BigDecimal getAvgPrice() {
@@ -101,6 +51,14 @@ public class TradeOrder {
         this.avgPrice = avgPrice;
     }
 
+    public BigDecimal getAmount() {
+        return amount;
+    }
+
+    public void setAmount(BigDecimal amount) {
+        this.amount = amount;
+    }
+
     public BigDecimal getDealAmount() {
         return dealAmount;
     }
@@ -109,29 +67,42 @@ public class TradeOrder {
         this.dealAmount = dealAmount;
     }
 
-    public int getId() {
-        return id;
+    public boolean isComplete() {
+        return isComplete;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setComplete(boolean complete) {
+        isComplete = complete;
+    }
+
+    public boolean isCloseout() {
+        return isCloseout;
+    }
+
+    public void setCloseout(boolean closeout) {
+        isCloseout = closeout;
+    }
+
+    public Date getCreateTime() {
+        return createTime;
+    }
+
+    public void setCreateTime(Date createTime) {
+        this.createTime = createTime;
     }
 
     @Override
     public String toString() {
-        return "TradeOrder{" +
-                "id=" + id +
-                ", orderId=" + orderId +
-                ", openPrice=" + openPrice +
-                ", avgPrice=" + avgPrice +
-                ", dealAmount=" + dealAmount +
-                ", earningP=" + earningP +
-                ", amount=" + amount +
-                ", isComplete=" + isComplete +
-                ", isTickOrder=" + isTickOrder +
-                ", createTime=" + createTime +
-                ", minStrategy=" + minStrategy +
-                ", isCloseout=" + isCloseout +
-                '}';
+        return "TradeOrder{\n" +
+                "id=" + id + "\n" +
+                ", orderId=" + orderId + "\n" +
+                ", tickPrice=" + tickPrice + "\n" +
+                ", avgPrice=" + avgPrice + "\n" +
+                ", amount=" + amount + "\n" +
+                ", dealAmount=" + dealAmount + "\n" +
+                ", isComplete=" + isComplete + "\n" +
+                ", isCloseout=" + isCloseout + "\n" +
+                ", createTime=" + createTime + "\n" +
+                "}\n";
     }
 }

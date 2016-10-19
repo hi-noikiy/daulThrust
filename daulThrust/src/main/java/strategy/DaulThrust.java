@@ -68,23 +68,13 @@ public class DaulThrust {
         BigDecimal openPrice = d.add(secOpenPrice);//open price
 
         System.out.println("open price is " + openPrice + " and the last price is " + kLineList.getLastPrice() + " now ! the time is " + getTime());
+        System.out.println("now kline is " + kLineList.getSecKline());
 
-        lastPriceLoop(openPrice);//loop the last price
+//        lastPriceLoop(openPrice);//loop the last price
     }
 
     private TradeOrder createOrder(boolean isCloseout, BigDecimal openPrice, BigDecimal amount) {
-        TradeOrder order = new TradeOrder();
-        order.setId(id++);
-        order.setCloseout(isCloseout);
-        order.setCreateTime(System.currentTimeMillis());
-        if (!isCloseout)
-            order.setEarningP(openPrice.add(earning));
-        order.setOpenPrice(openPrice);
-        order.setAmount(amount);
-        order.setMinStrategy(30);
-        order.setTickOrder(true);
-        System.out.println("create order " + order);
-        return order;
+        return new TradeOrder();
     }
 
     private void lastPriceLoop(BigDecimal openPrice) {
@@ -130,13 +120,13 @@ public class DaulThrust {
         if (checkComplete(order)) {//complete
             System.out.println("open order is complete ! order id is [" + openOrder.getOrderId() + "]\n" +
                     "time is " + getTime());
-            tradeOrder(createOrder(true, order.getEarningP(), order.getAmount()));//trade closeout order
+            tradeOrder(createOrder(true, order.getTickPrice(), order.getAmount()));//trade closeout order
         }
         loopComplete(order);
     }
 
     private boolean tradeOrder(TradeOrder openOrder) {
-        ApiResult.Trade trade = apiResult.getTradeRet(apiKey, secretKey, "btc_cny", String.valueOf(openOrder.getOpenPrice()), String.valueOf(openOrder.getAmount()), "buy");
+        ApiResult.Trade trade = apiResult.getTradeRet(apiKey, secretKey, "btc_cny", String.valueOf(openOrder.getTickPrice()), String.valueOf(openOrder.getAmount()), "buy");
         if (trade.getResult().equals("true")) {
             openOrder.setOrderId(trade.getOrderId());
 //            saveOrder(openOrder);//TODO
@@ -185,8 +175,8 @@ public class DaulThrust {
         TradeOrder closeOrder = createOrder(true, price, amount);
         if (trade.getResult().equals("true"))
             closeOrder.setOrderId(trade.getOrderId());
-        else
-            closeOrder.setTickOrder(false);
+//        else
+//            closeOrder.setTickOrder(false);
         this.closeoutOrder = closeOrder;
         System.out.println("closeout Order:" + closeOrder);
         //todo save;

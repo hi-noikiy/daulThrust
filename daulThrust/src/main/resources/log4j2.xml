@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="ERROR" monitorInterval="1800">
+
+    <properties>
+        <property name="LOG_HOME">../log/strategy</property>
+        <!--<property name="FILE_NAME">front.log</property>-->
+        <property name="FILE_PREFIX">strategy</property>
+    </properties>
+
+    <Appenders>
+        <Console name="stdout" target="SYSTEM_OUT">
+            <PatternLayout pattern="%p %m - [%c %L] - %d{HH:mm:ss} %n"/>
+        </Console>
+
+        <RollingFile
+                name="rollingLog"
+                immediateFlush="true"
+                bufferedIO="true"
+                append="true"
+                DatePattern="yyyy-MM-dd"
+                fileName="${LOG_HOME}/"
+                filePattern="${LOG_HOME}/minStrategy%d{yyyy-MM-dd}.log">
+            <PatternLayout pattern="%p %m - [%c %L] - %d{HH:mm:ss} %n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="30" modulate="true"/>
+                <SizeBasedTriggeringPolicy size="200 MB"/>
+            </Policies>
+        </RollingFile>
+    </Appenders>
+
+    <Loggers>
+        <Root level="info" includeLocation="true">
+            <AppenderRef ref="stdout"/>
+            <AppenderRef ref="rollingLog"/>
+        </Root>
+    </Loggers>
+</Configuration>

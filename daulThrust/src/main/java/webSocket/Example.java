@@ -1,10 +1,18 @@
 package webSocket;
 
+import org.apache.log4j.PropertyConfigurator;
+
 public class Example {
 
     public static WebSoketClient client;
+    public static int minStrategy = 1;
+
+    public Example() {
+        PropertyConfigurator.configure("src/main/resources/config/log4j.properties");
+    }
 
     public static void main(String[] args) {
+
 
         // apiKey 为用户申请的apiKey
         String apiKey = "XXXXX";
@@ -28,7 +36,7 @@ public class Example {
         client.start();
 
         // 添加订阅
-        client.addChannel("ok_sub_spotcny_btc_kline_1min");
+        client.addChannel("ok_sub_spotcny_btc_kline_" + minStrategy + "min");
 
         WebSocketService serviceTicker = new TickerServiceImpl();
         WebSoketClient clientTicker = new WebSoketClient(url, serviceTicker);
