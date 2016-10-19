@@ -7,13 +7,10 @@ public class Example {
     public static WebSoketClient client;
     public static int minStrategy = 1;
 
-    public Example() {
-        PropertyConfigurator.configure("src/main/resources/config/log4j.properties");
-    }
 
     public static void main(String[] args) {
 
-
+        PropertyConfigurator.configure("src/main/resources/config/log4j.properties");
         // apiKey 为用户申请的apiKey
         String apiKey = "XXXXX";
 

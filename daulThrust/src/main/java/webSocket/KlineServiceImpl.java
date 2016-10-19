@@ -24,7 +24,7 @@ public class KlineServiceImpl implements WebSocketService {
 //                    if (kLineList.setKline(kline)) {
 //                        daulThrust.order();
 //                    }
-                    simpleKline.setKline(kline);
+                    setKline(kline);
 
                 }
             } else if (array.size() == 6) {
@@ -32,8 +32,12 @@ public class KlineServiceImpl implements WebSocketService {
 //                if (kLineList.setKline(kline)) {
 //                    daulThrust.order();
 //                }
-                simpleKline.setKline(kline);
+                setKline(kline);
             }
         }
+    }
+
+    private synchronized void setKline(Kline kline) {
+        simpleKline.setKline(kline);
     }
 }
