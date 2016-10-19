@@ -18,13 +18,13 @@ public class SimpleKline {
 
     private static Kline secKline;
 
-    private static BigDecimal gains = BigDecimal.valueOf(20);
+    private static BigDecimal gains = BigDecimal.valueOf(200);
 
     private static BigDecimal allGains = BigDecimal.ZERO;
 
     private volatile TradeOrder order;
 
-    private BigDecimal stopLossPrice = BigDecimal.valueOf(10);//止损金额10元
+    private BigDecimal stopLossPrice = BigDecimal.valueOf(2);//止损金额10元
 
     private KLineList kLineList = KLineList.getInstance();
 
@@ -50,7 +50,10 @@ public class SimpleKline {
         } else if (secKline != null && secKline.getTime() == kline.getTime()) {
             secKline = kline;
         } else if (kline.getTime() > secKline.getTime()) {
+            log.warn("第三根kline....");
             checkSecKline();
+            initKline();
+            log.warn("第三根结束,第一根第二根清空");
         }
     }
 
@@ -65,13 +68,13 @@ public class SimpleKline {
 
     private synchronized void checkSecKline() {
         if (secKline.getClosePrice().compareTo(secKline.getOpenPrice()) >= 0) {//调用策略下单
-            startTime = System.currentTimeMillis();
             log.info("secKline 符合条件 " + secKline);
+            startTime = System.currentTimeMillis();
             order();
+            System.out.println("下单完毕，初始化第一根和第二个呢，开始下一轮...");
         } else {
             log.info("secKline 不符合条件 " + secKline + " - 开始重新计算");
         }
-        initKline();
     }
 
     //初始化
@@ -109,7 +112,7 @@ public class SimpleKline {
         log.info("trade open order ,tickPrice = " + order.getTickPrice() + ",orderId = " + order.getOrderId() + ",amount = " + order.getAmount());
         this.order = createOrder(true, getAmount(), order.getTickPrice());//create closeoutOrder
         log.info("trade close order ,tickPrice = " + this.order.getTickPrice() + ",orderId = " + this.order.getOrderId() + ",amount = " + this.order.getAmount());
-//        new CloseoutOrderMonitor().run();//todo 暂时不要止损
+        new CloseoutOrderMonitor().run();
 //            apiResult.getTradeRet(apiKey, secretKey, "", String.valueOf(order.getTickPrice()), String.valueOf(order.getAmount()), "");//test
 
     }
@@ -162,6 +165,7 @@ public class SimpleKline {
                 }
 
             }
+            initKline();
         }
     }
 
