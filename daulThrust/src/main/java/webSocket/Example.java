@@ -5,12 +5,12 @@ import org.apache.log4j.PropertyConfigurator;
 public class Example {
 
     public static WebSoketClient client;
-    public static int minStrategy = 1;
+    public static int minStrategy = 30;
 
 
     public static void main(String[] args) {
 
-        PropertyConfigurator.configure("src/main/resources/config/log4j.properties");
+        PropertyConfigurator.configure(Example.class.getClassLoader().getResourceAsStream("log4j.properties"));
         // apiKey 为用户申请的apiKey
         String apiKey = "XXXXX";
 
@@ -66,4 +66,5 @@ public class Example {
         // 获取用户信息
 //         client.getUserInfo(apiKey,secretKey);
     }
+
 }
