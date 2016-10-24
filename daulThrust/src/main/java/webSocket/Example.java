@@ -10,17 +10,17 @@ import java.util.Properties;
 public class Example {
 
     public static WebSoketClient client;
-    public static int minStrategy = 60;
+    public static int minStrategy = 0;
 
     public static void main(String[] args) {
-        String msg = "参数错误,启动程序需要一个必要参数，可选1/5/15/30/60";
+        String msg = "参数错误,启动程序需要一个必要参数，可选1/3/5/15/30/60";
         try {
             minStrategy = Integer.valueOf(args[0]);
         } catch (RuntimeException ex) {
             System.out.println(msg);
             System.exit(0);
         }
-        if (minStrategy != 1 && minStrategy != 5 && minStrategy != 15 && minStrategy != 30 && minStrategy != 60) {
+        if (minStrategy != 1 && minStrategy != 3 && minStrategy != 5 && minStrategy != 15 && minStrategy != 30 && minStrategy != 60) {
             System.out.println(msg);
             System.exit(0);
         }

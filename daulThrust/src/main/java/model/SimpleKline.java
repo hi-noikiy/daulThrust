@@ -26,7 +26,7 @@ public class SimpleKline {
 
     private volatile TradeOrder order;
 
-    private BigDecimal stopLossPrice = BigDecimal.valueOf(Example.minStrategy * 2);//止损金额 1/5/15/30 止损金额2元　60 - 6O
+    private BigDecimal stopLossPrice = BigDecimal.valueOf(Example.minStrategy * 2);//止损金额 分时*2
 
     private KLineList kLineList = KLineList.getInstance();
 
