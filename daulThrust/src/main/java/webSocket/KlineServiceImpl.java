@@ -7,13 +7,12 @@ import model.Kline;
 import model.SimpleKline;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import strategy.DaulThrust;
 
-public class KlineServiceImpl implements WebSocketService {
-    private KLineList kLineList = KLineList.getInstance();
-    private static DaulThrust daulThrust = new DaulThrust();
+class KlineServiceImpl implements WebSocketService {
+//    private KLineList kLineList = KLineList.getInstance();
+//    private static DaulThrust daulThrust = new DaulThrust();
     private static SimpleKline simpleKline = new SimpleKline();
-    Log log = LogFactory.getLog(SimpleKline.class);
+    private Log log = LogFactory.getLog(KlineServiceImpl.class);
 
     public synchronized void onReceive(String msg) {
         if (msg.contains("data")) {
@@ -28,11 +27,7 @@ public class KlineServiceImpl implements WebSocketService {
                         log.error("in size = 2 okcoin's data is Exception :" + ex.getMessage());
                         return;
                     }
-//                    if (kLineList.setKline(kline)) {
-//                        daulThrust.order();
-//                    }
-//                    setKline(kline);
-                    System.out.println(kline);
+                    setKline(kline);
                 }
             } else if (array.size() == 6) {
                 Kline kline;
@@ -42,8 +37,7 @@ public class KlineServiceImpl implements WebSocketService {
                     log.error("in size = 6 okcoin's data is Exception :" + ex.getMessage());
                     return;
                 }
-//                setKline(kline);
-                System.out.println(kline);
+                setKline(kline);
             }
         }
     }

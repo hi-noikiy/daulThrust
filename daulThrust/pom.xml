@@ -67,7 +67,7 @@
     </dependencies>
 
     <build>
-        <finalName>strategy30</finalName>
+        <finalName>strategy</finalName>
         <plugins>
 
             <!--<plugin>-->

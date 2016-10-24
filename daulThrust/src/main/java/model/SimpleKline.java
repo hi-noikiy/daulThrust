@@ -12,7 +12,7 @@ import java.util.Date;
  * 保存两根kline
  */
 public class SimpleKline {
-    Log log = LogFactory.getLog(SimpleKline.class);
+    private Log log = LogFactory.getLog(SimpleKline.class);
 
     private static Kline firKline;
 
@@ -26,7 +26,7 @@ public class SimpleKline {
 
     private volatile TradeOrder order;
 
-    private BigDecimal stopLossPrice = BigDecimal.valueOf(200);//止损金额10元
+    private BigDecimal stopLossPrice = BigDecimal.valueOf(Example.minStrategy * 2);//止损金额 1/5/15/30 止损金额2元　60 - 6O
 
     private KLineList kLineList = KLineList.getInstance();
 
@@ -155,7 +155,6 @@ public class SimpleKline {
                 BigDecimal lastP = kLineList.getLastPrice();
                 if (lowPrice.compareTo(lastP) >= 0) {//止损线
                     log.info("价格跌到止损线，目前价格为：+" + lastP + ",执行强制平仓，总盈利减去止损金额" + stopLossPrice + ",目前总盈利:" + (allGains = allGains.subtract(stopLossPrice)));
-                    checkCloseoutOrder();
                     order = null;
                     flag = false;
                 }
