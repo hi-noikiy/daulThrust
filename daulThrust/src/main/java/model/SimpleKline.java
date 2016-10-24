@@ -18,13 +18,15 @@ public class SimpleKline {
 
     private static Kline secKline;
 
+    private static Kline thiKline;
+
     private static BigDecimal gains = BigDecimal.valueOf(200);
 
     private static BigDecimal allGains = BigDecimal.ZERO;
 
     private volatile TradeOrder order;
 
-    private BigDecimal stopLossPrice = BigDecimal.valueOf(2);//止损金额10元
+    private BigDecimal stopLossPrice = BigDecimal.valueOf(200);//止损金额10元
 
     private KLineList kLineList = KLineList.getInstance();
 
@@ -39,41 +41,40 @@ public class SimpleKline {
      * @return
      */
     public synchronized void setKline(Kline kline) {
-        if (firKline == null)
+        if (firKline == null) {
             firKline = kline;
-        else if (firKline.getTime() == kline.getTime())
+            checkCloseoutOrder();
+            order = null;
+        } else if (firKline.getTime() == kline.getTime())
             firKline = kline;
         else if (secKline == null && firKline.getTime() < kline.getTime()) {
             secKline = kline;
-            checkCloseoutOrder();
             checkFirKline();
         } else if (secKline != null && secKline.getTime() == kline.getTime()) {
             secKline = kline;
-        } else if (kline.getTime() > secKline.getTime()) {
-//            log.warn("第三根kline....");
+        } else if (secKline != null && thiKline == null && secKline.getTime() < kline.getTime()) {
+            thiKline = kline;
             checkSecKline();
+        } else if (thiKline != null && thiKline.getTime() == kline.getTime())
+            thiKline = kline;
+        else if (thiKline != null && thiKline.getTime() < kline.getTime()) {
             initKline();
-//            log.warn("第三根结束,第一根第二根清空");
+        } else {
+            log.error("what's wrong　kline ＝　" + kline);
         }
     }
 
     private synchronized void checkFirKline() {
-        if (firKline.getClosePrice().compareTo(firKline.getOpenPrice()) == -1) {
-//            log.info("firKline 不符合条件 " + firKline);
+        if (firKline.getClosePrice().compareTo(firKline.getOpenPrice()) == -1)
             initKline();
-        } else {
-//            log.info("firKline 符合条件 " + firKline);
-        }
     }
 
     private synchronized void checkSecKline() {
         if (secKline.getClosePrice().compareTo(secKline.getOpenPrice()) >= 0) {//调用策略下单
-//            log.info("secKline 符合条件 " + secKline);
             startTime = System.currentTimeMillis();
             order();
-//            System.out.println("下单完毕，初始化第一根和第二个呢，开始下一轮...");
         } else {
-//            log.info("secKline 不符合条件 " + secKline + " - 开始重新计算");
+            initKline();
         }
     }
 
@@ -81,11 +82,11 @@ public class SimpleKline {
     private synchronized void initKline() {
         firKline = null;
         secKline = null;
+        thiKline = null;
     }
 
 
     private synchronized void checkCloseoutOrder() {
-//        log.info("开始" + Example.minStrategy + "min策略");
         if (order != null) {//有开仓，kline肯定被初始化过，到现在这个点，是有两根kline的时间
             log.info("\n检测订单是否盈利,,tickPrice = " + order.getTickPrice() + ",orderId = " + order.getOrderId() + ",amount = " + order.getAmount());
             BigDecimal price = order.getTickPrice();
@@ -102,9 +103,8 @@ public class SimpleKline {
                 log.info("未达到预期价格,按照此时价格平仓,此时lastPrice=" + lastPrice + "," + msg + "：" + noGains + ",总盈利:" + (allGains = allGains.add(noGains)));
             }
         } else {
-//            log.info("上笔无成交单,或已被平仓");
+            log.info("上笔无成交单,或已被平仓");
         }
-        order = null;
     }
 
     private synchronized void order() {
@@ -112,7 +112,7 @@ public class SimpleKline {
         log.info("trade open order ,tickPrice = " + order.getTickPrice());
         this.order = createOrder(true, getAmount(), order.getTickPrice());//create closeoutOrder
         log.info("trade close order ,tickPrice = " + this.order.getTickPrice());
-        new CloseoutOrderMonitor().run();
+        new CloseoutOrderMonitor().start();
 //            apiResult.getTradeRet(apiKey, secretKey, "", String.valueOf(order.getTickPrice()), String.valueOf(order.getAmount()), "");//test
 
     }
@@ -154,7 +154,8 @@ public class SimpleKline {
                 }
                 BigDecimal lastP = kLineList.getLastPrice();
                 if (lowPrice.compareTo(lastP) >= 0) {//止损线
-//                    log.info("价格跌到止损线，目前价格为：+" + lastP + ",执行强制平仓，总盈利减去止损金额" + stopLossPrice + ",目前总盈利:" + (allGains = allGains.subtract(stopLossPrice)));
+                    log.info("价格跌到止损线，目前价格为：+" + lastP + ",执行强制平仓，总盈利减去止损金额" + stopLossPrice + ",目前总盈利:" + (allGains = allGains.subtract(stopLossPrice)));
+                    checkCloseoutOrder();
                     order = null;
                     flag = false;
                 }
@@ -165,7 +166,6 @@ public class SimpleKline {
                 }
 
             }
-            initKline();
         }
     }
 

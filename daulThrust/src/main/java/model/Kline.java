@@ -70,9 +70,12 @@ public class Kline {
     @Override
     public String toString() {
         return "Kline{" +
-                ", openPrice=" + openPrice +
+                "volume=" + volume +
                 ", closePrice=" + closePrice +
-                ", volume=" + volume +
+                ", lowPrice=" + lowPrice +
+                ", highPrice=" + highPrice +
+                ", openPrice=" + openPrice +
+                ", time=" + time +
                 '}';
     }
 }

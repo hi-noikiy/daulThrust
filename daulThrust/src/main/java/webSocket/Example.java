@@ -5,7 +5,7 @@ import org.apache.log4j.PropertyConfigurator;
 public class Example {
 
     public static WebSoketClient client;
-    public static int minStrategy = 30;
+    public static int minStrategy = 1;
 
 
     public static void main(String[] args) {
