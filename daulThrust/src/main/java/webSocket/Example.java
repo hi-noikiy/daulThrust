@@ -13,7 +13,7 @@ public class Example {
     public static int minStrategy = 0;
 
     public static void main(String[] args) {
-        String msg = "参数错误,启动程序需要一个必要参数，可选1/3/5/15/30/60";
+        String msg = "参数错误,启动程序需要两个必要参数，可选参数一:1/3/5/15/30/60,可选参数二:min/hour";
         try {
             minStrategy = Integer.valueOf(args[0]);
         } catch (RuntimeException ex) {
@@ -24,7 +24,11 @@ public class Example {
             System.out.println(msg);
             System.exit(0);
         }
-        String arg = "min";
+        String arg = args[1];
+        if (arg == null || (!arg.equals("min") && !arg.equals("hour"))) {
+            System.out.println(msg);
+            System.exit(0);
+        }
         loadProperties(minStrategy + arg);
 
         Log log = LogFactory.getLog(Example.class);
