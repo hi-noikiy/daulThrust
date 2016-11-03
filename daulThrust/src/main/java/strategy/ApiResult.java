@@ -1,7 +1,10 @@
 package strategy;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import webSocket.Example;
 import webSocket.WebSoketClient;
 
@@ -11,6 +14,13 @@ import java.math.BigDecimal;
  * Created by tonyqi on 16-10-14.
  */
 public class ApiResult {
+
+//    中国站 apiKey:  8a134f3f-51b8-4993-a916-bad635fdaf15
+//    中国站 secretKey:  D67E022D0242FC3FE737C78BF8B546E4
+
+    private static String apiKey = "8a134f3f-51b8-4993-a916-bad635fdaf15";
+    private static String secretKey = "D67E022D0242FC3FE737C78BF8B546E4";
+
     private ApiResult() {
     }
 
@@ -28,107 +38,131 @@ public class ApiResult {
         return InnerClass.getInstance();
     }
 
-    private static WebSoketClient client = Example.client;
-    private static UserInfo userInfo = null;
-    private static Trade trade = null;
-    private static CancelOrder cancelOrder = null;
-    private static OrderInfo orderInfo = null;
-    //    private static final String spot_cny_kline_30min = "ok_sub_spotcny_btc_kline_30min";
-    private static final String spot_cny_trade = "ok_spotcny_trade";
-    private static final String spot_cny_cancel = "ok_spotcny_cancel_order";
-    private static final String spot_cny_userInfo = "ok_spotcny_userinfo";
-    private static final String spot_cny_orderInfo = "ok_spotcny_orderinfo";
+    private volatile static UserInfo userInfo = null;
+    private volatile static Trade trade = null;
+    private volatile static CancelOrder cancelOrder = null;
+    private volatile static OrderInfo orderInfo = null;
+    public static final String spot_cny_trade = "ok_spotcny_trade";
+    public static final String spot_cny_cancel = "ok_spotcny_cancel_order";
+    public static final String spot_cny_userInfo = "ok_spotcny_userinfo";
+    public static final String spot_cny_orderInfo = "ok_spotcny_orderinfo";
+    private static Log log = LogFactory.getLog(ApiResult.class);
 
-    public synchronized void setMsg(String msg) {
+
+    public static synchronized void setMsg(String msg) {
         JSONObject object = JSON.parseArray(msg).getJSONObject(0);//channel and data
-        String s = String.valueOf(object.get("channel"));
+        String s = object.getString("channel");
         JSONObject array = object.getJSONObject("data");
+        /**
+         * 交易返回信息json解析
+         */
         if (s.equals(spot_cny_trade)) {
-            trade = new Trade(array.getLong("order_id"), array.getString("result"));
+            String result = array.getString("result");
+            if ("true".equals(result))
+                trade = new Trade(array.getLong("order_id"), result);
+            else
+                log.error("trade error msg :" + msg);
+
+            /**
+             * 取消挂单返回信息json解析
+             */
         } else if (s.equals(spot_cny_cancel)) {
-            cancelOrder = new CancelOrder(array.getLong("order_id"), array.getString("result"));
+            String result = array.getString("result");
+            if ("true".equals(result))
+                cancelOrder = new CancelOrder(array.getLong("order_id"), result);
+            else
+                log.error("cancel order error msg :" + msg);
+
+            /**
+             *　账户信息返回信息json解析
+             */
         } else if (s.equals(spot_cny_userInfo)) {
-            userInfo = new UserInfo(hand(array.getBigDecimal("btc")), array.getBigDecimal("cny"), array.getBigDecimal("ltc"));
-        } else if (s.equals(spot_cny_orderInfo)) {//// TODO: 16-10-14 具体看数据结构
-            orderInfo = new OrderInfo(hand(array.getBigDecimal("amount")), array.getBigDecimal("avg_price"), hand(array.getBigDecimal("deal_amount")), array.getString("result"));
-        } else {
-            System.out.println("without this operation :[" + s + "]");
-        }
+            if ("true".equals(array.getString("result"))) {
+                array = array.getJSONObject("info").getJSONObject("funds").getJSONObject("free");
+                userInfo = new UserInfo(handler(array.getBigDecimal("btc")), handler(array.getBigDecimal("cny")), handler(array.getBigDecimal("ltc")));
+            } else
+                log.error("getUserInfo error msg :" + msg);
+
+            /**
+             *　订单详情返回信息json解析
+             */
+        } else if (s.equals(spot_cny_orderInfo)) {
+            String result = array.getString("result");
+            if ("true".equals(result)) {
+                JSONArray objects = array.getJSONArray("orders");
+                if (objects == null || objects.size() < 1)//为true的情况orders也会为空
+                    log.error("order info error msg :" + msg);
+                else {//"amount" 0, "avg_price" 1, "deal_amount" 3
+                    JSONObject o = objects.getJSONObject(0);
+                    orderInfo = new OrderInfo(handler(o.getBigDecimal("amount")), handler(o.getBigDecimal("avg_price")), handler(o.getBigDecimal("deal_amount")), handler(o.getBigDecimal("price")), result);
+                }
+            } else
+                log.error("order info error msg :" + msg);
+
+        } else
+            log.error("without this operation :[" + msg + "]");
+        ApiResult.class.notify();
     }
 
-    private static BigDecimal hand(BigDecimal value) {
-        return value.setScale(BigDecimal.ROUND_DOWN, 2);
+    private static BigDecimal handler(BigDecimal value) {
+        return value.setScale(2, BigDecimal.ROUND_DOWN);
     }
 
-    public static void main(String[] args) {
-        String result = "[{ \"channel\":\"ok_sub_spotcny_btc_ticker\",\"data\":{\"buy\":4319.1,\"high\":4327.27,\"last\":\"4319.10\",\"low\":4297.3,\"sell\":4319.2,\"timestamp\":\"1476424388898\",\"vol\":\"1,191,131.62\"}}]";
-        String tradeM = "[{\n" +
-                "    \"channel\":\"ok_spotcny_trade\",\n" +
-                "    \"data\":{\n" +
-                "        \"order_id\":\"125433029\",\n" +
-                "        \"result\":\"true\"\n" +
-                "    }\n" +
-                "}]";
-        JSONObject object = JSON.parseArray(tradeM).getJSONObject(0);
-//        JSONArray jsonArray = array.getJSONArray();
-        System.out.println(object.get("channel"));
+    public static synchronized UserInfo getUserInfoRet(String apiKey, String secretKey) {
+        userInfo = null;//重置
+        Example.client.getUserInfo(apiKey, secretKey);//请求
+        if (userInfo == null)
+            waitApi(5000);//锁等待,等待另一个线程推送数据，5s超时
+        return userInfo;
     }
 
-    public synchronized UserInfo getUserInfoRet(String apiKey, String secretKey) {
-        userInfo = null;
-        client.getUserInfo(apiKey, secretKey);
-        for (int i = 0; i < 3; i++) {
-            sleep(333);
-            if (userInfo != null)
-                return userInfo;
-        }
-        return null;
-    }
-
-    public synchronized Trade getTradeRet(String apiKey, String secretKey, String symbol,
-                             String price, String amount, String type) {
+    public static synchronized Trade getTradeRet(String apiKey, String secretKey, String symbol,
+                                                 String price, String amount, String type) {
         trade = null;
-        client.spotTrade(apiKey, secretKey, symbol, price, amount, type);
-        for (int i = 0; i < 3; i++) {
-            sleep(333);
-            if (trade != null)
-                return trade;
-        }
-        return null;
+        Example.client.spotTrade(apiKey, secretKey, symbol, price, amount, type);
+        if (trade == null)
+            waitApi(5000);
+        return trade;
     }
 
-    public synchronized CancelOrder getCancelOrderRet(String apiKey, String secretKey, String symbol,
-                                         Long orderId) {
+    public static synchronized CancelOrder getCancelOrderRet(String apiKey, String secretKey, String symbol,
+                                                             Long orderId) {
+//        long startTime = System.currentTimeMillis();//开始时间
         cancelOrder = null;
-        client.cancelOrder(apiKey, secretKey, symbol, orderId);
-        for (int i = 0; i < 3; i++) {
-            sleep(333);
-            if (cancelOrder != null)
-                return cancelOrder;
-        }
-        return null;
+        Example.client.cancelOrder(apiKey, secretKey, symbol, orderId);
+        if (cancelOrder == null)
+            waitApi(5000);
+//        long time = System.currentTimeMillis() - startTime;
+//        if (time < 400)//无奈。有时候撤完单，睡了200毫秒，还是没有BTC
+//            sleep(200 - time);//因为撤单有延时，所以让他睡200毫秒
+        return cancelOrder;
     }
 
-    public synchronized OrderInfo getOrderInfoRet(String apiKey, String secretKey, String symbol, String orderId) {
-        orderInfo = null;
-        client.orderInfo(apiKey, secretKey, symbol, orderId);
-        for (int i = 0; i < 3; i++) {
-            sleep(333);
-            if (orderInfo != null)
-                return orderInfo;
-        }
-        return null;
-    }
-
-    private static void sleep(long time) {
+    public static void sleep(long l) {
         try {
-            Thread.sleep(time);
+            Thread.sleep(l);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }
 
-    static class UserInfo {//free
+    public static synchronized OrderInfo getOrderInfoRet(String apiKey, String secretKey, String symbol, String orderId) {
+        orderInfo = null;
+        Example.client.orderInfo(apiKey, secretKey, symbol, orderId);
+        if (orderInfo == null)
+            waitApi(5000);
+        return orderInfo;
+    }
+
+    private static void waitApi(long timeout) {
+        try {
+            ApiResult.class.wait(timeout);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static class UserInfo {//free
 
         UserInfo(BigDecimal btc, BigDecimal cny, BigDecimal ltc) {
             this.btc = btc;
@@ -163,9 +197,18 @@ public class ApiResult {
         public void setLtc(BigDecimal ltc) {
             this.ltc = ltc;
         }
+
+        @Override
+        public String toString() {
+            return "UserInfo{" +
+                    "btc=" + btc +
+                    ", cny=" + cny +
+                    ", ltc=" + ltc +
+                    '}';
+        }
     }
 
-    static class Trade {
+    public static class Trade {
         Trade(long orderId, String result) {
             this.orderId = orderId;
             this.result = result;
@@ -189,20 +232,33 @@ public class ApiResult {
         public void setResult(String result) {
             this.result = result;
         }
+
+        @Override
+        public String toString() {
+            return "Trade{" +
+                    "result='" + result + '\'' +
+                    ", orderId=" + orderId +
+                    '}';
+        }
     }
 
-    static class OrderInfo {
-        OrderInfo(BigDecimal amount, BigDecimal avgPrice, BigDecimal dealAmount, String result) {
+    public static class OrderInfo {
+        public OrderInfo() {
+        }
+
+        OrderInfo(BigDecimal amount, BigDecimal avgPrice, BigDecimal dealAmount, BigDecimal price, String result) {
             this.amount = amount;
             this.avgPrice = avgPrice;
             this.dealAmount = dealAmount;
             this.result = result;
+            this.price = price;
         }
 
         BigDecimal amount;
         BigDecimal avgPrice;
         BigDecimal dealAmount;
         String result;
+        BigDecimal price;
 
         public BigDecimal getAmount() {
             return amount;
@@ -235,9 +291,28 @@ public class ApiResult {
         public void setResult(String result) {
             this.result = result;
         }
+
+        public BigDecimal getPrice() {
+            return price;
+        }
+
+        public void setPrice(BigDecimal price) {
+            this.price = price;
+        }
+
+        @Override
+        public String toString() {
+            return "OrderInfo{" +
+                    "amount=" + amount +
+                    ", avgPrice=" + avgPrice +
+                    ", dealAmount=" + dealAmount +
+                    ", result='" + result + '\'' +
+                    ", price=" + price +
+                    '}';
+        }
     }
 
-    static class CancelOrder {
+    public static class CancelOrder {
         CancelOrder(long orderId, String result) {
             this.orderId = orderId;
             this.result = result;
@@ -260,6 +335,14 @@ public class ApiResult {
 
         public void setResult(String result) {
             this.result = result;
+        }
+
+        @Override
+        public String toString() {
+            return "CancelOrder{" +
+                    "result='" + result + '\'' +
+                    ", orderId=" + orderId +
+                    '}';
         }
     }
 }

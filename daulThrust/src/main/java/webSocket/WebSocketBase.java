@@ -242,19 +242,19 @@ public abstract class WebSocketBase {
      * @param secretKey
      */
     public void realTrades(String apiKey, String secretKey) {
-        log.debug("apiKey=" + apiKey + ", secretKey=" + secretKey);
+//        log.debug("apiKey=" + apiKey + ", secretKey=" + secretKey);
         String signStr = MD5Util.getMD5String("api_key=" + apiKey + "&secret_key=" + secretKey);
         String channel = "ok_sub_spotcny_trades";
         if (siteFlag == 1) {
             channel = "ok_sub_spotusd_trades";
         }
-        StringBuilder tradeStr = new StringBuilder(
-                "{'event':'addChannel','channel':'" + channel
-                        + "','parameters':{'api_key':'").append(apiKey)
-                .append("','sign':'").append(signStr)
-                .append("'},'binary':'true'}");
-        log.info(tradeStr.toString());
-        this.sendMessage(tradeStr.toString());
+        String tradeStr = "{'event':'addChannel','channel':'" + channel
+                + "','parameters':{'api_key':'" +
+                apiKey +
+                "','sign':'" + signStr +
+                "'},'binary':'true'}";
+//        log.info(tradeStr.toString());
+        this.sendMessage(tradeStr);
     }
 
     /**
@@ -291,7 +291,6 @@ public abstract class WebSocketBase {
         signPreMap.put("sign", signStr);
         String params = MD5Util.getParams(signPreMap);
         tradeStr.append(params).append("}");
-        log.info(tradeStr.toString());
         this.sendMessage(tradeStr.toString());
     }
 
