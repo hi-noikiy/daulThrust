@@ -104,6 +104,11 @@ public class ApiResult {
         ApiResult.class.notify();
     }
 
+    public static void exit() {
+        log.error("程序异常，结束程序");
+        System.exit(0);
+    }
+
     private static BigDecimal handler(BigDecimal value) {
         return value.setScale(2, BigDecimal.ROUND_DOWN);
     }

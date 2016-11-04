@@ -44,7 +44,12 @@ class KlineServiceImpl implements WebSocketService {
                 count++;
             }
         } else if (message.contains("channel") && message.contains("errorcode")) {
+            if (message.contains("cancel_order")) {
+                log.info("订单已成交，撤单失败.");
+                return;
+            }
             log.error(message);
+            ApiResult.exit();
         }
     }
 

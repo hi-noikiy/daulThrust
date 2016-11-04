@@ -21,13 +21,13 @@ public class SimpleKline {
 
     private static Kline thiKline;
 
-    private static BigDecimal gains = BigDecimal.valueOf(20);
+    private static BigDecimal gains = BigDecimal.valueOf(4);
 
     private static BigDecimal allGains = BigDecimal.ZERO;
 
     private volatile TradeOrder order;
 
-    private static BigDecimal stopLossPrice = BigDecimal.valueOf(Example.minStrategy * 2);//止损金额 分时*2
+    private static BigDecimal stopLossPrice = BigDecimal.valueOf(Example.minStrategy * 3);//止损金额 分时*2
 
     private KLineList kLineList = KLineList.getInstance();
 
@@ -38,6 +38,9 @@ public class SimpleKline {
     private String apiKey = "d00c60fb-1ad7-4515-b103-66e8949eac99";
     private String secretKey = "0D6676D62212297F179CB00A1E561008";
     private String symbol = "btc_cny";
+
+    private Long secStartT;
+    private boolean open;
 
     /**
      * return true 表示需要判断
@@ -59,9 +62,9 @@ public class SimpleKline {
             checkFirKline();
         } else if (secKline != null && secKline.getTime() == kline.getTime()) {
             secKline = kline;
+            checkSecKline();
         } else if (secKline != null && thiKline == null && secKline.getTime() < kline.getTime()) {
             thiKline = kline;
-            checkSecKline();
         } else if (thiKline != null && thiKline.getTime() == kline.getTime())
             thiKline = kline;
         else if (thiKline != null && thiKline.getTime() < kline.getTime()) {
@@ -72,16 +75,24 @@ public class SimpleKline {
     }
 
     private synchronized void checkFirKline() {
+        open = false;
         if (firKline.getClosePrice().compareTo(firKline.getOpenPrice()) == -1)
             initKline();
+        else
+            secStartT = System.currentTimeMillis();
     }
 
     private synchronized void checkSecKline() {
-        if (secKline.getClosePrice().compareTo(secKline.getOpenPrice()) >= 0) {//调用策略下单
-            startTime = System.currentTimeMillis();
-            order();
-        } else {
-            initKline();
+        if (open)
+            return;
+        if (System.currentTimeMillis() - secStartT >= Example.minStrategy * 60000 - 2000) {//提前两秒
+            if (secKline.getClosePrice().compareTo(secKline.getOpenPrice()) >= 0) {//调用策略下单
+                open = true;
+                startTime = System.currentTimeMillis();
+                order();
+            } else {
+                initKline();
+            }
         }
     }
 
@@ -108,7 +119,8 @@ public class SimpleKline {
                 BigDecimal initGains = (avgPrice.subtract(buyPrice)).multiply(dealAmount);
                 closeout(tickAmount.subtract(dealAmount).setScale(2, BigDecimal.ROUND_DOWN), initGains);
             } else {//完全成交－平仓单价格是开仓单的平均成交价加上gains
-                log.info("此次交易盈利:" + (avgPrice.subtract(tickPrice).add(gains)).multiply(tickAmount) + ",截至目前总盈利:" + (allGains = allGains.add(gains)));
+                BigDecimal gain = (gains).multiply(tickAmount);
+                log.info("此次交易盈利:" + gain + ",截至目前总盈利:" + (allGains = allGains.add(gain)));
             }
         } else {
             log.info("上笔无开单");
@@ -122,19 +134,7 @@ public class SimpleKline {
             return;
         }
 
-        ApiResult.UserInfo userInfo;
-        int count = 0;
-        while (true) {
-            userInfo = ApiResult.getUserInfoRet(apiKey, secretKey);
-            if (userInfo.getBtc().compareTo(amount) >= 0)
-                break;
-            count++;
-            if (count >= 100) {
-                log.error("异常。平仓时账户持币不足...amount = " + amount);
-                return;
-            }
-            ApiResult.sleep(50);
-        }
+        checkUserInfo(amount);
 
 //        BigDecimal p = kLineList.getLastPrice().subtract(stopLossPrice.multiply(BigDecimal.valueOf(2)));//强制平仓挂单价
         ApiResult.Trade trade = ApiResult.getTradeRet(apiKey, secretKey, symbol, null, String.valueOf(amount), "sell_market");
@@ -162,16 +162,36 @@ public class SimpleKline {
         }
         buyPrice = orderInfo.getAvgPrice();//买入价格，为统计盈利
         log.info("trade open order ,tickPrice = " + order.getTickPrice() + " , amount = " + order.getAmount() + ", avgPrice = " + buyPrice);
-        this.order = createOrder(true, getAmount(), orderInfo.getAvgPrice());//create closeoutOrder
+        BigDecimal amount = orderInfo.getAmount();
+        this.order = createOrder(true, amount, orderInfo.getAvgPrice());//create closeoutOrder
+
+        checkUserInfo(amount);
+
         ApiResult.Trade t = ApiResult.getTradeRet(apiKey, secretKey, symbol, String.valueOf(this.order.getTickPrice()), String.valueOf(this.order.getAmount()), "sell");
         this.order.setOrderId(t.getOrderId());
         log.info("trade close order ,tickPrice = " + this.order.getTickPrice() + ",amount = " + this.order.getAmount());
         new CloseoutOrderMonitor().start();//检测订单是否止损
+    }
 
+    private boolean checkUserInfo(BigDecimal amount) {
+        ApiResult.UserInfo userInfo;
+        int count = 0;
+        while (true) {
+            userInfo = ApiResult.getUserInfoRet(apiKey, secretKey);
+            if (userInfo.getBtc().compareTo(amount) >= 0)
+                break;
+            count++;
+            if (count >= 100) {
+                log.error("异常。挂卖单账户持币不足...amount = " + amount);
+                ApiResult.exit();
+            }
+            ApiResult.sleep(50);
+        }
+        return true;
     }
 
     private BigDecimal getAmount() {
-        return BigDecimal.valueOf(0.5);
+        return BigDecimal.valueOf(1);
     }
 
     private synchronized static TradeOrder createOrder(boolean isCloseout, BigDecimal amount, BigDecimal price) {
