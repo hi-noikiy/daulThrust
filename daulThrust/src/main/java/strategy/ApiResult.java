@@ -110,7 +110,7 @@ public class ApiResult {
     }
 
     private static BigDecimal handler(BigDecimal value) {
-        return value.setScale(2, BigDecimal.ROUND_DOWN);
+        return value.setScale(4, BigDecimal.ROUND_DOWN);
     }
 
     public static synchronized UserInfo getUserInfoRet(String apiKey, String secretKey) {

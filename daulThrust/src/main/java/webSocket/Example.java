@@ -11,13 +11,13 @@ public class Example {
 
     public static WebSoketClient client;
     public static int minStrategy = 0;
-    private static String apiKey = "8a134f3f-51b8-4993-a916-bad635fdaf15";
-    private static String secretKey = "D67E022D0242FC3FE737C78BF8B546E4";
 
     public static void main(String[] args) {
-        args = new String[2];
-        args[0] = "1";
-        args[1] = "min";
+        if (args.length < 2) {
+            args = new String[2];
+            args[0] = "1";
+            args[1] = "min";
+        }
         String msg = "参数错误,启动程序需要两个必要参数，可选参数一:1/3/5/15/30/60,可选参数二:min/hour";
         try {
             minStrategy = Integer.valueOf(args[0]);
@@ -38,7 +38,7 @@ public class Example {
 
         Log log = LogFactory.getLog(Example.class);
 
-        log.info("\n《《《《《《《《《《《《《《《《start" + minStrategy + "" + arg + "strategy》》》》》》》》》》》》》》》》》》");
+        log.info("**********start" + minStrategy + "" + arg + "strategy**********");
 
 
 //        apiKey = "dfbb23da-5cac-4bec-b4ce-ed828f8a5458";
