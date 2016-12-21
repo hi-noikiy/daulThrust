@@ -47,17 +47,17 @@ public class Example {
         // 国际站WebSocket地址 注意如果访问国内站 请将 real.okcoin.com 改为 real.okcoin.cn
         String url = "wss://real.okcoin.cn:10440/websocket/okcoinapi";
 
-        // 订阅消息处理类,用于处理WebSocket服务返回的消息
-        WebSocketService service = new KlineServiceImpl();
-
-        // WebSocket客户端
-        client = new WebSoketClient(url, service);
-
-        // 启动客户端
-        client.start();
-
-        // 添加订阅
-        client.addChannel("ok_sub_spotcny_btc_kline_" + minStrategy + arg);
+//        // 订阅消息处理类,用于处理WebSocket服务返回的消息
+//        WebSocketService service = new KlineServiceImpl();
+//
+//        // WebSocket客户端
+//        client = new WebSoketClient(url, service);
+//
+//        // 启动客户端
+//        client.start();
+//
+//        // 添加订阅
+//        client.addChannel("ok_sub_spotcny_btc_kline_" + minStrategy + arg);
 
         WebSocketService serviceTicker = new TickerServiceImpl();
         WebSoketClient clientTicker = new WebSoketClient(url, serviceTicker);

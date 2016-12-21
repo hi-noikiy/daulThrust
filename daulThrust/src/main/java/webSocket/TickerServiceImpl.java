@@ -10,7 +10,9 @@ import model.KLineList;
 public class TickerServiceImpl implements WebSocketService {
     public void onReceive(String msg) {
         if (msg.contains("data")) {
-            KLineList.getInstance().setLastPrice(JSON.parseArray(msg).getJSONObject(0).getJSONObject("data").getBigDecimal("last"));
+//            KLineList.getInstance().setLastPrice(JSON.parseArray(msg).getJSONObject(0).getJSONObject("data").getBigDecimal("last"));
+//            System.out.println(JSON.parseArray(msg).getJSONObject(0).getJSONObject("data").getBigDecimal("last"));
+
         }
     }
 
