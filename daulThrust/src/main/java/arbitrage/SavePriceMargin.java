@@ -121,30 +121,52 @@ public class SavePriceMargin {
                 }
                 hasCoin = a;
             }
-            reckonGains(okTID, hbTID, priceM);
+            reckonGains(okTID, hbTID, okPrice, hbPrice, priceM);
         } else {
             log.debug("*****Trade failed okPrice = " + okPrice + " , hbPrice = " + hbPrice + " , hasCoin = " + hasCoin + "*****");
         }
     }
 
-    private static void reckonGains(long okTID, long hbTID, String priceM) {
-        cachedThreadPool.execute(new ReckonGains(okTID, hbTID, priceM));
+    private static void reckonGains(long okTID, long hbTID, BigDecimal okPrice, BigDecimal hbPrice, String priceM) {
+        cachedThreadPool.execute(new ReckonGains(okTID, hbTID, okPrice, hbPrice, priceM));
     }
 
     private static class ReckonGains implements Runnable {
         private long okTID;
         private long hbTID;
+        private BigDecimal okPrice;
+        private BigDecimal hbPrice;
         private String priceM;
 
-        ReckonGains(long okTID, long hbTID, String priceM) {
+        ReckonGains(long okTID, long hbTID, BigDecimal okPrice, BigDecimal hbPrice, String priceM) {
             this.okTID = okTID;
             this.hbTID = hbTID;
+            this.okPrice = okPrice;
+            this.hbPrice = hbPrice;
             this.priceM = priceM;
         }
 
         @Override
         public void run() {
-            //// TODO: 16-12-22 计算盈利
+            ApiResult.OrderInfo okOrderInfo = ApiResult.getOrderInfoRet(okApiKey, okSecretKey, "btc_cny", String.valueOf(okTID));
+            String ret = huobiRestApi.orderInfo(hbApiKey, hbSecretKey, "btc_cny", String.valueOf(hbTID));
+            ApiResult.OrderInfo hbOrderInfo = handleOrderInfo(ret);
+            BigDecimal okAvgPrice = okOrderInfo.getAvgPrice();
+            BigDecimal hbAvgPrice = hbOrderInfo.getAvgPrice();
+            BigDecimal expectGains, realGains;
+            if (priceM.equals(a)) {
+                expectGains = tradeAmount.multiply(okPrice.subtract(hbPrice));
+                realGains = tradeAmount.multiply(okAvgPrice.subtract(hbAvgPrice));
+            } else {
+                expectGains = tradeAmount.multiply(hbPrice.subtract(okPrice));
+                realGains = tradeAmount.multiply(hbAvgPrice.subtract(okAvgPrice));
+            }
+            log.warn("搬砖完成--起始价格--okcoin:" + okPrice + ",huobi:" + hbPrice + "--实际成交价--okcoin:" + okAvgPrice + ",huobi:" + hbAvgPrice);
+            log.warn("==========预计盈利:" + expectGains + " , 实际盈利:" + realGains + "==========");
+        }
+
+        private ApiResult.OrderInfo handleOrderInfo(String ret) {//// TODO: 16-12-22
+            return new ApiResult.OrderInfo();
         }
     }
 
