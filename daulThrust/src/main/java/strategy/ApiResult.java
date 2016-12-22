@@ -56,51 +56,61 @@ public class ApiResult {
         /**
          * 交易返回信息json解析
          */
-        if (s.equals(spot_cny_trade)) {
-            String result = array.getString("result");
-            if ("true".equals(result))
-                trade = new Trade(array.getLong("order_id"), result);
-            else
-                log.error("trade error msg :" + msg);
+        switch (s) {
+            case spot_cny_trade: {
+                String result = array.getString("result");
+                if ("true".equals(result))
+                    trade = new Trade(array.getLong("order_id"), result);
+                else
+                    log.error("trade error msg :" + msg);
 
-            /**
-             * 取消挂单返回信息json解析
-             */
-        } else if (s.equals(spot_cny_cancel)) {
-            String result = array.getString("result");
-            if ("true".equals(result))
-                cancelOrder = new CancelOrder(array.getLong("order_id"), result);
-            else
-                log.error("cancel order error msg :" + msg);
+                /**
+                 * 取消挂单返回信息json解析
+                 */
+                break;
+            }
+            case spot_cny_cancel: {
+                String result = array.getString("result");
+                if ("true".equals(result))
+                    cancelOrder = new CancelOrder(array.getLong("order_id"), result);
+                else
+                    log.error("cancel order error msg :" + msg);
 
-            /**
-             *　账户信息返回信息json解析
-             */
-        } else if (s.equals(spot_cny_userInfo)) {
-            if ("true".equals(array.getString("result"))) {
-                array = array.getJSONObject("info").getJSONObject("funds").getJSONObject("free");
-                userInfo = new UserInfo(handler(array.getBigDecimal("btc")), handler(array.getBigDecimal("cny")), handler(array.getBigDecimal("ltc")));
-            } else
-                log.error("getUserInfo error msg :" + msg);
+                /**
+                 *　账户信息返回信息json解析
+                 */
+                break;
+            }
+            case spot_cny_userInfo:
+                if ("true".equals(array.getString("result"))) {
+                    array = array.getJSONObject("info").getJSONObject("funds").getJSONObject("free");
+                    userInfo = new UserInfo(handler(array.getBigDecimal("btc")), handler(array.getBigDecimal("cny")), handler(array.getBigDecimal("ltc")));
+                } else
+                    log.error("getUserInfo error msg :" + msg);
 
-            /**
-             *　订单详情返回信息json解析
-             */
-        } else if (s.equals(spot_cny_orderInfo)) {
-            String result = array.getString("result");
-            if ("true".equals(result)) {
-                JSONArray objects = array.getJSONArray("orders");
-                if (objects == null || objects.size() < 1)//为true的情况orders也会为空
+                /**
+                 *　订单详情返回信息json解析
+                 */
+                break;
+            case spot_cny_orderInfo: {
+                String result = array.getString("result");
+                if ("true".equals(result)) {
+                    JSONArray objects = array.getJSONArray("orders");
+                    if (objects == null || objects.size() < 1)//为true的情况orders也会为空
+                        log.error("order info error msg :" + msg);
+                    else {//"amount" 0, "avg_price" 1, "deal_amount" 3
+                        JSONObject o = objects.getJSONObject(0);
+                        orderInfo = new OrderInfo(handler(o.getBigDecimal("amount")), handler(o.getBigDecimal("avg_price")), handler(o.getBigDecimal("deal_amount")), handler(o.getBigDecimal("price")), result);
+                    }
+                } else
                     log.error("order info error msg :" + msg);
-                else {//"amount" 0, "avg_price" 1, "deal_amount" 3
-                    JSONObject o = objects.getJSONObject(0);
-                    orderInfo = new OrderInfo(handler(o.getBigDecimal("amount")), handler(o.getBigDecimal("avg_price")), handler(o.getBigDecimal("deal_amount")), handler(o.getBigDecimal("price")), result);
-                }
-            } else
-                log.error("order info error msg :" + msg);
 
-        } else
-            log.error("without this operation :[" + msg + "]");
+                break;
+            }
+            default:
+                log.error("without this operation :[" + msg + "]");
+                break;
+        }
         ApiResult.class.notify();
     }
 
@@ -132,14 +142,10 @@ public class ApiResult {
 
     public static synchronized CancelOrder getCancelOrderRet(String apiKey, String secretKey, String symbol,
                                                              Long orderId) {
-//        long startTime = System.currentTimeMillis();//开始时间
         cancelOrder = null;
         Example.client.cancelOrder(apiKey, secretKey, symbol, orderId);
         if (cancelOrder == null)
             waitApi(5000);
-//        long time = System.currentTimeMillis() - startTime;
-//        if (time < 400)//无奈。有时候撤完单，睡了200毫秒，还是没有BTC
-//            sleep(200 - time);//因为撤单有延时，所以让他睡200毫秒
         return cancelOrder;
     }
 
@@ -214,7 +220,7 @@ public class ApiResult {
     }
 
     public static class Trade {
-        Trade(long orderId, String result) {
+        public Trade(long orderId, String result) {
             this.orderId = orderId;
             this.result = result;
         }

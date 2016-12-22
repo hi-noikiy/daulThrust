@@ -6,7 +6,7 @@ import java.math.BigDecimal;
  * Created by tonyqi on 16-7-7.
  */
 public interface IHuobiRestApi {
-    BigDecimal ticker() throws InterruptedException;
+    BigDecimal ticker();
 
     /**
      * 下单交易

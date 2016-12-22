@@ -37,13 +37,11 @@ public class HuobiRestApi implements IHuobiRestApi {
 
 
     @Override
-    public BigDecimal ticker() throws InterruptedException {
+    public BigDecimal ticker() {
         String huobiTickerUrl = "http://api.huobi.com/staticmarket/ticker_btc_json.js";
         String ret = URL.sendGet(huobiTickerUrl);
-        if (ret == null) {
-            Thread.sleep(1000);
-            ticker();
-        }
+        if (ret == null)
+            return null;
         JSONObject object = JSON.parseObject(ret).getJSONObject("ticker");
         return object.getBigDecimal("last");
     }

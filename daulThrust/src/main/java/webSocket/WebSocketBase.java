@@ -269,7 +269,7 @@ public abstract class WebSocketBase {
      */
     public void spotTrade(String apiKey, String secretKey, String symbol,
                           String price, String amount, String type) {
-        Map<String, String> signPreMap = new HashMap<String, String>();
+        Map<String, String> signPreMap = new HashMap<>();
         signPreMap.put("api_key", apiKey);
         signPreMap.put("symbol", symbol);
         if (price != null) {
