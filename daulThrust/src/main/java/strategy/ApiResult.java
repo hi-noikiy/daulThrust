@@ -56,60 +56,44 @@ public class ApiResult {
         /**
          * 交易返回信息json解析
          */
-        switch (s) {
-            case spot_cny_trade: {
-                String result = array.getString("result");
-                if ("true".equals(result))
-                    trade = new Trade(array.getLong("order_id"), result);
-                else
-                    log.error("trade error msg :" + msg);
+        if (s.equals(spot_cny_trade)) {
+            String result = array.getString("result");
+            if ("true".equals(result))
+                trade = new Trade(array.getLong("order_id"), result);
+            else
+                log.error("trade error msg :" + msg);
+        } else if (s.equals(spot_cny_cancel)) {
+            String result = array.getString("result");
+            if ("true".equals(result))
+                cancelOrder = new CancelOrder(array.getLong("order_id"), result);
+            else
+                log.error("cancel order error msg :" + msg);
+        } else if (s.equals(spot_cny_userInfo)) {
+            if ("true".equals(array.getString("result"))) {
+                array = array.getJSONObject("info").getJSONObject("funds").getJSONObject("free");
+                userInfo = new UserInfo(handler(array.getBigDecimal("btc")), handler(array.getBigDecimal("cny")), handler(array.getBigDecimal("ltc")));
+            } else
+                log.error("getUserInfo error msg :" + msg);
 
-                /**
-                 * 取消挂单返回信息json解析
-                 */
-                break;
-            }
-            case spot_cny_cancel: {
-                String result = array.getString("result");
-                if ("true".equals(result))
-                    cancelOrder = new CancelOrder(array.getLong("order_id"), result);
-                else
-                    log.error("cancel order error msg :" + msg);
+            /**
+             *　订单详情返回信息json解析
+             */
 
-                /**
-                 *　账户信息返回信息json解析
-                 */
-                break;
-            }
-            case spot_cny_userInfo:
-                if ("true".equals(array.getString("result"))) {
-                    array = array.getJSONObject("info").getJSONObject("funds").getJSONObject("free");
-                    userInfo = new UserInfo(handler(array.getBigDecimal("btc")), handler(array.getBigDecimal("cny")), handler(array.getBigDecimal("ltc")));
-                } else
-                    log.error("getUserInfo error msg :" + msg);
-
-                /**
-                 *　订单详情返回信息json解析
-                 */
-                break;
-            case spot_cny_orderInfo: {
-                String result = array.getString("result");
-                if ("true".equals(result)) {
-                    JSONArray objects = array.getJSONArray("orders");
-                    if (objects == null || objects.size() < 1)//为true的情况orders也会为空
-                        log.error("order info error msg :" + msg);
-                    else {//"amount" 0, "avg_price" 1, "deal_amount" 3
-                        JSONObject o = objects.getJSONObject(0);
-                        orderInfo = new OrderInfo(handler(o.getBigDecimal("amount")), handler(o.getBigDecimal("avg_price")), handler(o.getBigDecimal("deal_amount")), handler(o.getBigDecimal("price")), result);
-                    }
-                } else
+        } else if (s.equals(spot_cny_orderInfo)) {
+            String result = array.getString("result");
+            if ("true".equals(result)) {
+                JSONArray objects = array.getJSONArray("orders");
+                if (objects == null || objects.size() < 1)//为true的情况orders也会为空
                     log.error("order info error msg :" + msg);
+                else {//"amount" 0, "avg_price" 1, "deal_amount" 3
+                    JSONObject o = objects.getJSONObject(0);
+                    orderInfo = new OrderInfo(handler(o.getBigDecimal("amount")), handler(o.getBigDecimal("avg_price")), handler(o.getBigDecimal("deal_amount")), handler(o.getBigDecimal("price")), result);
+                }
+            } else
+                log.error("order info error msg :" + msg);
+        } else {
+            log.error("without this operation :[" + msg + "]");
 
-                break;
-            }
-            default:
-                log.error("without this operation :[" + msg + "]");
-                break;
         }
         ApiResult.class.notify();
     }

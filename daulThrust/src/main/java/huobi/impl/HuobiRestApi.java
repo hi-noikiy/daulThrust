@@ -36,7 +36,6 @@ public class HuobiRestApi implements IHuobiRestApi {
     private static final String id_k = "id";
 
 
-    @Override
     public BigDecimal ticker() {
         String huobiTickerUrl = "http://api.huobi.com/staticmarket/ticker_btc_json.js";
         String ret = URL.sendGet(huobiTickerUrl);
@@ -47,7 +46,7 @@ public class HuobiRestApi implements IHuobiRestApi {
     }
 
     public String trade(String apiKey, String secretKey, String currency, String price, String amount, String tradeDirection) {
-        Map<String, String> paraMap = new TreeMap<>();
+        Map<String, String> paraMap = new TreeMap<String, String>();
         if ("btc".equals(currency))
             currency = "1";//btc
         else
@@ -66,7 +65,7 @@ public class HuobiRestApi implements IHuobiRestApi {
     }
 
     public String cancelOrder(String apiKey, String secretKey, String currency, String tradeId) {
-        Map<String, String> paraMap = new TreeMap<>();
+        Map<String, String> paraMap = new TreeMap<String, String>();
         paraMap.put(method_k, "cancel_order");
         paraMap.put(created_k, EncryptUtil.getTimestamp());
         paraMap.put(apiKey, apiKey);
@@ -84,7 +83,7 @@ public class HuobiRestApi implements IHuobiRestApi {
     }
 
     public String userInfo(String apiKey, String secretKey) {
-        Map<String, String> paraMap = new TreeMap<>();
+        Map<String, String> paraMap = new TreeMap<String, String>();
         paraMap.put(method_k, "get_account_info");
         paraMap.put(created_k, EncryptUtil.getTimestamp());
         paraMap.put(apiKey_k, apiKey);
@@ -96,7 +95,7 @@ public class HuobiRestApi implements IHuobiRestApi {
     }
 
     public String orderInfo(String apiKey, String secretKey, String currency, String tradeId) {
-        Map<String, String> paraMap = new TreeMap<>();
+        Map<String, String> paraMap = new TreeMap<String, String>();
         paraMap.put(method_k, "order_info");
         paraMap.put(created_k, EncryptUtil.getTimestamp());
         paraMap.put(apiKey_k, apiKey);
@@ -114,7 +113,7 @@ public class HuobiRestApi implements IHuobiRestApi {
     }
 
     public static void main(String[] args) {
-        Map<String, String> map = new HashMap<>();
+        Map<String, String> map = new HashMap<String, String>();
         map.put("1", "a");
         map.put("2", "b");
         map.put("3", "c");
