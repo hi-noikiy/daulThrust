@@ -146,7 +146,6 @@ public class SavePriceMargin {
             this.priceM = priceM;
         }
 
-        @Override
         public void run() {
             ApiResult.OrderInfo okOrderInfo = ApiResult.getOrderInfoRet(okApiKey, okSecretKey, "btc_cny", String.valueOf(okTID));
             String ret = huobiRestApi.orderInfo(hbApiKey, hbSecretKey, "btc_cny", String.valueOf(hbTID));
